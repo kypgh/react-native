@@ -4,7 +4,7 @@ import { Text, Card } from 'react-native-elements';
 import { ProfileScreenProps } from '../types';
 import { theme, spacing } from '../theme';
 
-export default function ProfileScreen({ navigation }: ProfileScreenProps) {
+export default function ProfileScreen({ }: ProfileScreenProps) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>

@@ -4,7 +4,7 @@ import { Text, Card } from 'react-native-elements';
 import { BookingsScreenProps } from '../types';
 import { theme, spacing } from '../theme';
 
-export default function BookingsScreen({ navigation }: BookingsScreenProps) {
+export default function BookingsScreen({ }: BookingsScreenProps) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>

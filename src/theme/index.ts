@@ -1,5 +1,4 @@
-import { TextStyle } from 'react-native';
-import { AppTheme, AppSpacing, AppTypography, ComponentStyles } from './types';
+import { AppSpacing, AppTypography, ComponentStyles } from './types';
 
 // Define comprehensive theme object with colors, spacing, and typography
 export const theme = {

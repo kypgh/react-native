@@ -4,7 +4,7 @@ import { Text, Card } from 'react-native-elements';
 import { PaymentPlansScreenProps } from '../types';
 import { theme, spacing } from '../theme';
 
-export default function PaymentPlansScreen({ navigation }: PaymentPlansScreenProps) {
+export default function PaymentPlansScreen({ }: PaymentPlansScreenProps) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
