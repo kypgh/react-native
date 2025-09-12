@@ -1,18 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text, Card } from 'react-native-elements';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
-import { RootTabParamList } from '../navigation/AppNavigator';
+import { BookingsScreenProps } from '../types';
 import { theme, spacing } from '../theme';
-
-type BookingsScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Bookings'>;
-type BookingsScreenRouteProp = RouteProp<RootTabParamList, 'Bookings'>;
-
-interface BookingsScreenProps {
-  navigation: BookingsScreenNavigationProp;
-  route: BookingsScreenRouteProp;
-}
 
 export default function BookingsScreen({ navigation }: BookingsScreenProps) {
   return (

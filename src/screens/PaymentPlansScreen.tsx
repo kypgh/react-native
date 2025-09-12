@@ -1,18 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text, Card } from 'react-native-elements';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
-import { RootTabParamList } from '../navigation/AppNavigator';
+import { PaymentPlansScreenProps } from '../types';
 import { theme, spacing } from '../theme';
-
-type PaymentPlansScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'PaymentPlans'>;
-type PaymentPlansScreenRouteProp = RouteProp<RootTabParamList, 'PaymentPlans'>;
-
-interface PaymentPlansScreenProps {
-  navigation: PaymentPlansScreenNavigationProp;
-  route: PaymentPlansScreenRouteProp;
-}
 
 export default function PaymentPlansScreen({ navigation }: PaymentPlansScreenProps) {
   return (

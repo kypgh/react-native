@@ -2,18 +2,8 @@ import React from 'react';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { Text, Button, Card } from 'react-native-elements';
 import { StatusBar } from 'expo-status-bar';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
-import { RootTabParamList } from '../navigation/AppNavigator';
-import { theme, spacing, getButtonStyle, getCardStyle, getTextStyle, getShadowStyle } from '../theme';
-
-type HomeScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Home'>;
-type HomeScreenRouteProp = RouteProp<RootTabParamList, 'Home'>;
-
-interface HomeScreenProps {
-  navigation: HomeScreenNavigationProp;
-  route: HomeScreenRouteProp;
-}
+import { HomeScreenProps } from '../types';
+import { theme, spacing } from '../theme';
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   return (
@@ -31,7 +21,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           {/* Quick Actions Grid */}
           <View style={styles.quickActionsContainer}>
             <Text h4 style={styles.sectionTitle}>Quick Actions</Text>
-            
+
             <View style={styles.actionsGrid}>
               <Button
                 title="My Bookings"
@@ -71,7 +61,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
           <Card containerStyle={styles.activityCard}>
             <Text h4 style={styles.cardTitle}>Recent Activity</Text>
             <View style={styles.divider} />
-            
+
             <View style={styles.activityItem}>
               <View style={styles.activityIcon}>
                 <Text style={styles.activityIconText}>📅</Text>

@@ -1,18 +1,8 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text, Card } from 'react-native-elements';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
-import { RootTabParamList } from '../navigation/AppNavigator';
+import { ProfileScreenProps } from '../types';
 import { theme, spacing } from '../theme';
-
-type ProfileScreenNavigationProp = BottomTabNavigationProp<RootTabParamList, 'Profile'>;
-type ProfileScreenRouteProp = RouteProp<RootTabParamList, 'Profile'>;
-
-interface ProfileScreenProps {
-  navigation: ProfileScreenNavigationProp;
-  route: ProfileScreenRouteProp;
-}
 
 export default function ProfileScreen({ navigation }: ProfileScreenProps) {
   return (
