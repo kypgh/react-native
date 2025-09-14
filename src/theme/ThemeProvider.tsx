@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AppTheme, ThemeMode } from './types';
+import { AppTheme, ThemeMode, NavigationThemeConfig } from './types';
 import { darkColors, lightColors } from './colors';
 
 // Theme context interface
@@ -22,10 +22,30 @@ interface ThemeProviderProps {
   initialTheme?: ThemeMode;
 }
 
+// Create navigation theme configuration based on mode
+const createNavigationTheme = (mode: ThemeMode): NavigationThemeConfig => {
+  const colors = mode === 'dark' ? darkColors : lightColors;
+  
+  return {
+    tabBarStyle: {
+      backgroundColor: colors.surface,
+      borderTopColor: mode === 'dark' ? '#475569' : '#E2E8F0',
+    },
+    headerStyle: {
+      backgroundColor: colors.background,
+      borderBottomColor: mode === 'dark' ? '#475569' : '#E2E8F0',
+    },
+    tabBarActiveTintColor: colors.primary,
+    tabBarInactiveTintColor: colors.text.muted,
+    headerTintColor: colors.text.primary,
+  };
+};
+
 // Create theme object based on mode
 const createTheme = (mode: ThemeMode): AppTheme => ({
   mode,
   colors: mode === 'dark' ? darkColors : lightColors,
+  navigation: createNavigationTheme(mode),
 });
 
 // Theme provider component

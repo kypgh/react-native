@@ -21,10 +21,26 @@ export interface ColorPalette {
 // Theme mode type
 export type ThemeMode = 'light' | 'dark';
 
+// Navigation theme configuration interface
+export interface NavigationThemeConfig {
+  tabBarStyle: {
+    backgroundColor: string;
+    borderTopColor: string;
+  };
+  headerStyle: {
+    backgroundColor: string;
+    borderBottomColor: string;
+  };
+  tabBarActiveTintColor: string;
+  tabBarInactiveTintColor: string;
+  headerTintColor: string;
+}
+
 // Complete theme interface
 export interface AppTheme {
   mode: ThemeMode;
   colors: ColorPalette;
+  navigation: NavigationThemeConfig;
 }
 
 // Spacing interface

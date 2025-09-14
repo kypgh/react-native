@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, ViewStyle, TextStyle, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/ThemeProvider';
 import { spacing } from '../../theme/spacing';
-import { typography } from '../../theme/typography';
 import { Card } from './Card';
 
 export interface StatsCardProps {
@@ -12,6 +11,9 @@ export interface StatsCardProps {
   icon?: string;
   style?: ViewStyle;
   size?: 'small' | 'medium' | 'large';
+  onPress?: () => void;
+  selected?: boolean;
+  filterType?: 'pending' | 'upcoming' | 'completed' | 'total';
 }
 
 export const StatsCard: React.FC<StatsCardProps> = ({
@@ -21,6 +23,9 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   icon,
   style,
   size = 'medium',
+  onPress,
+  selected = false,
+  filterType,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -28,16 +33,16 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   const getCardStyle = (): ViewStyle => {
     const sizeStyles: Record<string, ViewStyle> = {
       small: {
-        minHeight: 80,
-        flex: 1,
+        minHeight: 88,
+        width: '100%',
       },
       medium: {
-        minHeight: 100,
-        flex: 1,
+        minHeight: 108,
+        width: '100%',
       },
       large: {
-        minHeight: 120,
-        flex: 1,
+        minHeight: 128,
+        width: '100%',
       },
     };
 
@@ -135,12 +140,31 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     return value.toString();
   };
 
+  const getAccessibilityLabel = (): string => {
+    const baseLabel = `${title}: ${formatValue(value)}`;
+    if (onPress) {
+      const selectedText = selected ? 'selected' : 'not selected';
+      return `${baseLabel}, filter button, ${selectedText}. Double tap to filter bookings.`;
+    }
+    return baseLabel;
+  };
+
   return (
     <Card 
       style={StyleSheet.flatten([getCardStyle(), style])}
-      padding={size === 'small' ? 'small' : 'medium'}
+      padding={size === 'small' ? 'medium' : 'medium'}
+      variant={onPress ? 'interactive' : 'default'}
+      onPress={onPress}
+      selected={selected}
+      testID={filterType ? `stats-card-${filterType}` : undefined}
     >
-      <View style={styles.container}>
+      <View 
+        style={styles.container}
+        accessible={true}
+        accessibilityLabel={getAccessibilityLabel()}
+        accessibilityRole={onPress ? 'button' : 'text'}
+        accessibilityState={onPress ? { selected } : undefined}
+      >
         {icon && (
           <Text style={getIconStyle()}>
             {icon}

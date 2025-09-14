@@ -38,9 +38,15 @@ export interface CardProps extends BaseComponentProps {
   children: ReactNode;
   title?: string;
   subtitle?: string;
-  elevation?: number;
-  padding?: number;
+  elevation?: 'low' | 'medium' | 'high';
+  variant?: 'default' | 'interactive' | 'highlighted';
+  padding?: 'small' | 'medium' | 'large';
+  borderRadius?: number;
+  backgroundColor?: string;
   onPress?: () => void;
+  selected?: boolean;
+  disabled?: boolean;
+  testID?: string;
 }
 
 // List item props

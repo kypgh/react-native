@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../theme';
 import { 
   HomeScreen, 
   BookingsScreen, 
@@ -23,6 +24,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function AppNavigator() {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   
   return (
     <NavigationContainer>
@@ -48,12 +50,12 @@ export default function AppNavigator() {
 
             return <Ionicons name={iconName} size={24} color={color} />;
           },
-          tabBarActiveTintColor: '#8B5CF6', // Purple accent color
-          tabBarInactiveTintColor: '#64748B', // Muted gray for inactive
+          tabBarActiveTintColor: theme.navigation.tabBarActiveTintColor,
+          tabBarInactiveTintColor: theme.navigation.tabBarInactiveTintColor,
           tabBarStyle: {
-            backgroundColor: '#334155', // Dark surface color
+            backgroundColor: theme.navigation.tabBarStyle.backgroundColor,
             borderTopWidth: 1,
-            borderTopColor: '#475569', // Subtle border
+            borderTopColor: theme.navigation.tabBarStyle.borderTopColor,
             paddingBottom: Math.max(insets.bottom, 8),
             paddingTop: 8,
             height: 65 + Math.max(insets.bottom, 0), // Slightly taller for better touch targets
@@ -67,17 +69,17 @@ export default function AppNavigator() {
             marginBottom: 2,
           },
           headerStyle: {
-            backgroundColor: '#1E293B', // Dark background
+            backgroundColor: theme.navigation.headerStyle.backgroundColor,
             elevation: 0,
             shadowOpacity: 0,
             borderBottomWidth: 1,
-            borderBottomColor: '#475569',
+            borderBottomColor: theme.navigation.headerStyle.borderBottomColor,
           },
-          headerTintColor: '#FFFFFF',
+          headerTintColor: theme.navigation.headerTintColor,
           headerTitleStyle: {
             fontWeight: '600',
             fontSize: 18,
-            color: '#FFFFFF',
+            color: theme.navigation.headerTintColor,
           },
         })}
       >

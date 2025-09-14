@@ -81,7 +81,8 @@ export default function ProfileScreen({}: ProfileScreenProps) {
       >
         {/* User Profile Section */}
         <AnimatedCard style={styles.profileCard} delay={0}>
-          <View style={styles.profileHeader}>
+          <Card elevation="medium" padding="medium">
+            <View style={styles.profileHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
               <Text style={[styles.avatarText, { color: "#FFFFFF" }]}>
                 {getUserInitials(
@@ -110,11 +111,13 @@ export default function ProfileScreen({}: ProfileScreenProps) {
               <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
           </View>
+          </Card>
         </AnimatedCard>
 
         {/* Active Brand Section */}
         <AnimatedCard style={styles.brandCard} delay={100}>
-          <View style={styles.brandHeader}>
+          <Card elevation="medium" padding="medium">
+            <View style={styles.brandHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               Active Brand
             </Text>
@@ -139,11 +142,13 @@ export default function ProfileScreen({}: ProfileScreenProps) {
               </Text>
             </View>
           </View>
+          </Card>
         </AnimatedCard>
 
         {/* Personal Information Section */}
         <AnimatedCard style={styles.personalInfoCard} delay={200}>
-          <View style={styles.personalInfoHeader}>
+          <Card elevation="medium" padding="medium">
+            <View style={styles.personalInfoHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               Personal Information
             </Text>
@@ -328,11 +333,13 @@ export default function ProfileScreen({}: ProfileScreenProps) {
               )}
             </View>
           </View>
+          </Card>
         </AnimatedCard>
 
         {/* Theme Settings Section */}
         <AnimatedCard style={styles.themeCard} delay={300}>
-          <View style={styles.themeHeader}>
+          <Card elevation="medium" padding="medium">
+            <View style={styles.themeHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               Theme Settings
             </Text>
@@ -413,6 +420,7 @@ export default function ProfileScreen({}: ProfileScreenProps) {
               </View>
             </View>
           </View>
+          </Card>
         </AnimatedCard>
       </ScrollView>
     </View>

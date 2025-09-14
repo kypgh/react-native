@@ -114,7 +114,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan }) => {
   const { colors } = theme;
 
   return (
-    <Card style={styles.planCard} padding="large" shadow={true}>
+    <Card style={styles.planCard} padding="large" elevation="medium">
       {/* Plan Header with Name and Credits */}
       <View style={styles.planHeader}>
         <View style={styles.planTitleContainer}>
