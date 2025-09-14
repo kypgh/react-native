@@ -1,43 +1,30 @@
 import { TextStyle, ViewStyle } from 'react-native';
 
-// Theme interface for type safety
-export interface AppTheme {
-  colors: {
-    primary: string;
-    secondary: string;
-    success: string;
-    warning: string;
-    error: string;
-    text: string;
-    background: string;
-    surface: string;
-    grey0: string;
-    grey1: string;
-    grey2: string;
-    grey3: string;
-    grey4: string;
-    grey5: string;
-    greyOutline: string;
-    searchBg: string;
-    disabled: string;
-    divider: string;
-    platform: {
-      ios: {
-        primary: string;
-        secondary: string;
-        success: string;
-        warning: string;
-        error: string;
-      };
-      android: {
-        primary: string;
-        secondary: string;
-        success: string;
-        warning: string;
-        error: string;
-      };
-    };
+// Color palette interface for fitness app
+export interface ColorPalette {
+  primary: string;        // Purple #8B5CF6
+  background: string;     // Dark navy #1E293B
+  surface: string;        // Card background #334155
+  text: {
+    primary: string;      // White #FFFFFF
+    secondary: string;    // Light gray #94A3B8
+    muted: string;        // Darker gray #64748B
   };
+  status: {
+    pending: string;      // Yellow #F59E0B
+    confirmed: string;    // Green #10B981
+    completed: string;    // Blue #3B82F6
+    error: string;        // Red #EF4444
+  };
+}
+
+// Theme mode type
+export type ThemeMode = 'light' | 'dark';
+
+// Complete theme interface
+export interface AppTheme {
+  mode: ThemeMode;
+  colors: ColorPalette;
 }
 
 // Spacing interface

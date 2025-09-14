@@ -120,6 +120,35 @@ export interface AppState {
   error: string | null;
 }
 
+// Home Screen specific interfaces
+export interface GymInfo {
+  name: string;
+  tagline: string;
+  description?: string;
+}
+
+export interface ClassItem {
+  id: string;
+  name: string;
+  date: Date;
+  duration: number; // in minutes
+  availableSpots: number;
+  totalSpots: number;
+  instructor?: string;
+  category: string;
+}
+
+export interface HomeScreenData {
+  gymInfo: GymInfo;
+  classFilters: string[];
+  selectedWeek: {
+    start: Date;
+    end: Date;
+  };
+  selectedDate: Date;
+  classes: ClassItem[];
+}
+
 // Authentication interfaces
 export interface LoginCredentials {
   email: string;

@@ -9,13 +9,13 @@ import {
   PaymentPlansScreen, 
   ProfileScreen 
 } from '../screens';
-import { theme } from '../theme';
+
 
 // Define the navigation tab parameter list
 export type RootTabParamList = {
   Home: undefined;
+  Plans: undefined;
   Bookings: undefined;
-  PaymentPlans: undefined;
   Profile: undefined;
 };
 
@@ -29,48 +29,55 @@ export default function AppNavigator() {
       <Tab.Navigator
         initialRouteName="Home"
         screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
+          // Add smooth transitions between tabs
+          animationEnabled: true,
+          tabBarIcon: ({ focused, color }) => {
             let iconName: keyof typeof Ionicons.glyphMap;
 
             if (route.name === 'Home') {
               iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Plans') {
+              iconName = focused ? 'card' : 'card-outline';
             } else if (route.name === 'Bookings') {
               iconName = focused ? 'calendar' : 'calendar-outline';
-            } else if (route.name === 'PaymentPlans') {
-              iconName = focused ? 'card' : 'card-outline';
             } else if (route.name === 'Profile') {
               iconName = focused ? 'person' : 'person-outline';
             } else {
               iconName = 'help-outline';
             }
 
-            return <Ionicons name={iconName} size={size} color={color} />;
+            return <Ionicons name={iconName} size={24} color={color} />;
           },
-          tabBarActiveTintColor: theme.colors.tabBarActive,
-          tabBarInactiveTintColor: theme.colors.tabBarInactive,
+          tabBarActiveTintColor: '#8B5CF6', // Purple accent color
+          tabBarInactiveTintColor: '#64748B', // Muted gray for inactive
           tabBarStyle: {
-            backgroundColor: theme.colors.tabBarBackground,
+            backgroundColor: '#334155', // Dark surface color
             borderTopWidth: 1,
-            borderTopColor: theme.colors.greyOutline,
-            paddingBottom: Math.max(insets.bottom, 5),
-            paddingTop: 5,
-            height: 60 + Math.max(insets.bottom, 0),
+            borderTopColor: '#475569', // Subtle border
+            paddingBottom: Math.max(insets.bottom, 8),
+            paddingTop: 8,
+            height: 65 + Math.max(insets.bottom, 0), // Slightly taller for better touch targets
           },
           tabBarLabelStyle: {
             fontSize: 12,
             fontWeight: '600',
+            marginTop: 4,
+          },
+          tabBarIconStyle: {
+            marginBottom: 2,
           },
           headerStyle: {
-            backgroundColor: theme.colors.primary,
-            elevation: 4,
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            shadowOffset: { width: 0, height: 2 },
+            backgroundColor: '#1E293B', // Dark background
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: '#475569',
           },
           headerTintColor: '#FFFFFF',
           headerTitleStyle: {
             fontWeight: '600',
             fontSize: 18,
+            color: '#FFFFFF',
           },
         })}
       >
@@ -79,7 +86,15 @@ export default function AppNavigator() {
           component={HomeScreen}
           options={{ 
             title: 'Home',
-            headerTitle: 'Booking App'
+            headerTitle: 'FitLife Gym'
+          }}
+        />
+        <Tab.Screen 
+          name="Plans" 
+          component={PaymentPlansScreen}
+          options={{ 
+            title: 'Plans',
+            headerTitle: 'Payment Plans'
           }}
         />
         <Tab.Screen 
@@ -88,14 +103,6 @@ export default function AppNavigator() {
           options={{ 
             title: 'Bookings',
             headerTitle: 'My Bookings'
-          }}
-        />
-        <Tab.Screen 
-          name="PaymentPlans" 
-          component={PaymentPlansScreen}
-          options={{ 
-            title: 'Plans',
-            headerTitle: 'Payment Plans'
           }}
         />
         <Tab.Screen 

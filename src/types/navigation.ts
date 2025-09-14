@@ -18,7 +18,7 @@ export type BookingsScreenNavigationProp = BottomTabNavigationProp<
 
 export type PaymentPlansScreenNavigationProp = BottomTabNavigationProp<
   RootTabParamList,
-  'PaymentPlans'
+  'Plans'
 >;
 
 export type ProfileScreenNavigationProp = BottomTabNavigationProp<
@@ -29,7 +29,7 @@ export type ProfileScreenNavigationProp = BottomTabNavigationProp<
 // Route prop types for each screen
 export type HomeScreenRouteProp = RouteProp<RootTabParamList, 'Home'>;
 export type BookingsScreenRouteProp = RouteProp<RootTabParamList, 'Bookings'>;
-export type PaymentPlansScreenRouteProp = RouteProp<RootTabParamList, 'PaymentPlans'>;
+export type PaymentPlansScreenRouteProp = RouteProp<RootTabParamList, 'Plans'>;
 export type ProfileScreenRouteProp = RouteProp<RootTabParamList, 'Profile'>;
 
 // Combined navigation and route props for each screen

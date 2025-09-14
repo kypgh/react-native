@@ -1,0 +1,166 @@
+import React from 'react';
+import { View, Text, ViewStyle, TextStyle, StyleSheet } from 'react-native';
+import { useTheme } from '../../theme/ThemeProvider';
+import { spacing } from '../../theme/spacing';
+import { typography } from '../../theme/typography';
+import { Card } from './Card';
+
+export interface StatsCardProps {
+  title: string;
+  value: number;
+  color: string;
+  icon?: string;
+  style?: ViewStyle;
+  size?: 'small' | 'medium' | 'large';
+}
+
+export const StatsCard: React.FC<StatsCardProps> = ({
+  title,
+  value,
+  color,
+  icon,
+  style,
+  size = 'medium',
+}) => {
+  const { theme } = useTheme();
+  const { colors } = theme;
+
+  const getCardStyle = (): ViewStyle => {
+    const sizeStyles: Record<string, ViewStyle> = {
+      small: {
+        minHeight: 80,
+        flex: 1,
+      },
+      medium: {
+        minHeight: 100,
+        flex: 1,
+      },
+      large: {
+        minHeight: 120,
+        flex: 1,
+      },
+    };
+
+    return {
+      ...sizeStyles[size],
+    };
+  };
+
+  const getValueStyle = (): TextStyle => {
+    const baseStyle: TextStyle = {
+      color: color,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: spacing.xs,
+    };
+
+    const sizeStyles: Record<string, TextStyle> = {
+      small: {
+        fontSize: 20,
+        lineHeight: 24,
+      },
+      medium: {
+        fontSize: 28,
+        lineHeight: 32,
+      },
+      large: {
+        fontSize: 36,
+        lineHeight: 40,
+      },
+    };
+
+    return {
+      ...baseStyle,
+      ...sizeStyles[size],
+    };
+  };
+
+  const getTitleStyle = (): TextStyle => {
+    const baseStyle: TextStyle = {
+      color: colors.text.secondary,
+      textAlign: 'center',
+      fontWeight: '500',
+    };
+
+    const sizeStyles: Record<string, TextStyle> = {
+      small: {
+        fontSize: 12,
+        lineHeight: 16,
+      },
+      medium: {
+        fontSize: 14,
+        lineHeight: 18,
+      },
+      large: {
+        fontSize: 16,
+        lineHeight: 20,
+      },
+    };
+
+    return {
+      ...baseStyle,
+      ...sizeStyles[size],
+    };
+  };
+
+  const getIconStyle = (): TextStyle => {
+    const sizeStyles: Record<string, TextStyle> = {
+      small: {
+        fontSize: 16,
+        marginBottom: spacing.xs,
+      },
+      medium: {
+        fontSize: 20,
+        marginBottom: spacing.sm,
+      },
+      large: {
+        fontSize: 24,
+        marginBottom: spacing.sm,
+      },
+    };
+
+    return {
+      color: color,
+      textAlign: 'center',
+      ...sizeStyles[size],
+    };
+  };
+
+  const formatValue = (value: number): string => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    }
+    return value.toString();
+  };
+
+  return (
+    <Card 
+      style={StyleSheet.flatten([getCardStyle(), style])}
+      padding={size === 'small' ? 'small' : 'medium'}
+    >
+      <View style={styles.container}>
+        {icon && (
+          <Text style={getIconStyle()}>
+            {icon}
+          </Text>
+        )}
+        <Text style={getValueStyle()}>
+          {formatValue(value)}
+        </Text>
+        <Text style={getTitleStyle()}>
+          {title}
+        </Text>
+      </View>
+    </Card>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
