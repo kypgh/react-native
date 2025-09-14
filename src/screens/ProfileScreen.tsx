@@ -9,7 +9,7 @@ import {
   TextInput,
 } from "react-native";
 import { ProfileScreenProps } from "../types";
-import { Card, Button, AnimatedCard, FadeInView } from "../components/common";
+import { Card, Button, AnimatedCard } from "../components/common";
 import { useTheme } from "../theme/ThemeProvider";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -81,86 +81,101 @@ export default function ProfileScreen({}: ProfileScreenProps) {
       >
         {/* User Profile Section */}
         <AnimatedCard style={styles.profileCard} delay={0}>
-          <Card elevation="low" padding="medium" animating={true}>
+          <Card 
+            elevation="medium" 
+            padding="large" 
+            variant="default"
+            style={styles.profileCardInner}
+          >
             <View style={styles.profileHeader}>
-            <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.avatarText, { color: "#FFFFFF" }]}>
-                {getUserInitials(
-                  profileData.user.firstName,
-                  profileData.user.lastName
-                )}
-              </Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={[styles.userName, { color: colors.text.primary }]}>
-                {profileData.user.firstName} {profileData.user.lastName}
-              </Text>
-              <Text
-                style={[styles.userEmail, { color: colors.text.secondary }]}
+              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.avatarText, { color: "#FFFFFF" }]}>
+                  {getUserInitials(
+                    profileData.user.firstName,
+                    profileData.user.lastName
+                  )}
+                </Text>
+              </View>
+              <View style={styles.profileInfo}>
+                <Text style={[styles.userName, { color: colors.text.primary }]}>
+                  {profileData.user.firstName} {profileData.user.lastName}
+                </Text>
+                <Text
+                  style={[styles.userEmail, { color: colors.text.secondary }]}
+                >
+                  {profileData.user.email}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.logoutButton,
+                  { backgroundColor: colors.status.error },
+                ]}
+                onPress={handleLogout}
               >
-                {profileData.user.email}
-              </Text>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={[
-                styles.logoutButton,
-                { backgroundColor: colors.status.error },
-              ]}
-              onPress={handleLogout}
-            >
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
-          </View>
           </Card>
         </AnimatedCard>
 
         {/* Active Brand Section */}
         <AnimatedCard style={styles.brandCard} delay={100}>
-          <Card elevation="low" padding="medium" animating={true}>
+          <Card 
+            elevation="medium" 
+            padding="large" 
+            variant="default"
+            style={styles.brandCardInner}
+          >
             <View style={styles.brandHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              Active Brand
-            </Text>
-          </View>
-          <View style={styles.brandContent}>
-            <View style={styles.brandLogo}>
-              <Text style={styles.brandLogoText}>
-                {profileData.activeBrand.logo}
+              <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+                Active Brand
               </Text>
             </View>
-            <View style={styles.brandInfo}>
-              <Text style={[styles.brandName, { color: colors.text.primary }]}>
-                {profileData.activeBrand.name}
-              </Text>
-              <Text
-                style={[
-                  styles.brandDescription,
-                  { color: colors.text.secondary },
-                ]}
-              >
-                {profileData.activeBrand.description}
-              </Text>
+            <View style={styles.brandContent}>
+              <View style={styles.brandLogo}>
+                <Text style={styles.brandLogoText}>
+                  {profileData.activeBrand.logo}
+                </Text>
+              </View>
+              <View style={styles.brandInfo}>
+                <Text style={[styles.brandName, { color: colors.text.primary }]}>
+                  {profileData.activeBrand.name}
+                </Text>
+                <Text
+                  style={[
+                    styles.brandDescription,
+                    { color: colors.text.secondary },
+                  ]}
+                >
+                  {profileData.activeBrand.description}
+                </Text>
+              </View>
             </View>
-          </View>
           </Card>
         </AnimatedCard>
 
         {/* Personal Information Section */}
         <AnimatedCard style={styles.personalInfoCard} delay={200}>
-          <Card elevation="low" padding="medium" animating={true}>
+          <Card 
+            elevation="medium" 
+            padding="large" 
+            variant="default"
+            style={styles.personalInfoCardInner}
+          >
             <View style={styles.personalInfoHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              Personal Information
-            </Text>
-            <Button
-              variant="outline"
-              size="small"
-              onPress={handleEditToggle}
-              style={styles.editButton}
-            >
-              {isEditing ? "Save" : "Edit"}
-            </Button>
-          </View>
+              <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+                Personal Information
+              </Text>
+              <Button
+                variant="outline"
+                size="small"
+                onPress={handleEditToggle}
+                style={styles.editButton}
+              >
+                {isEditing ? "Save" : "Edit"}
+              </Button>
+            </View>
 
           <View style={styles.formSection}>
             <View style={styles.formField}>
@@ -338,12 +353,17 @@ export default function ProfileScreen({}: ProfileScreenProps) {
 
         {/* Theme Settings Section */}
         <AnimatedCard style={styles.themeCard} delay={300}>
-          <Card elevation="low" padding="medium" animating={true}>
+          <Card 
+            elevation="medium" 
+            padding="large" 
+            variant="default"
+            style={styles.themeCardInner}
+          >
             <View style={styles.themeHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              Theme Settings
-            </Text>
-          </View>
+              <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+                Theme Settings
+              </Text>
+            </View>
 
           <View style={styles.themeContent}>
             <View style={styles.themeOption}>
@@ -441,7 +461,10 @@ const styles = StyleSheet.create({
 
   // Profile Card Styles
   profileCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  profileCardInner: {
+    // Additional styling for enhanced card
   },
   profileHeader: {
     flexDirection: "row",
@@ -483,7 +506,10 @@ const styles = StyleSheet.create({
 
   // Brand Card Styles
   brandCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  brandCardInner: {
+    // Additional styling for enhanced card
   },
   brandHeader: {
     marginBottom: spacing.md,
@@ -518,7 +544,10 @@ const styles = StyleSheet.create({
 
   // Personal Information Card Styles
   personalInfoCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  personalInfoCardInner: {
+    // Additional styling for enhanced card
   },
   personalInfoHeader: {
     flexDirection: "row",
@@ -566,7 +595,10 @@ const styles = StyleSheet.create({
 
   // Theme Settings Card Styles
   themeCard: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  themeCardInner: {
+    // Additional styling for enhanced card
   },
   themeHeader: {
     marginBottom: spacing.lg,
