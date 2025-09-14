@@ -21,6 +21,7 @@ export interface CardProps {
   selected?: boolean;
   disabled?: boolean;
   testID?: string;
+  animating?: boolean; // New prop to disable shadows during animations
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -35,6 +36,7 @@ export const Card: React.FC<CardProps> = ({
   selected = false,
   disabled = false,
   testID,
+  animating = false,
 }) => {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -67,31 +69,39 @@ export const Card: React.FC<CardProps> = ({
           width: 0,
           height: 1,
         },
-        shadowOpacity: theme.mode === "dark" ? 0.2 : 0.08,
-        shadowRadius: 2,
+        shadowOpacity: theme.mode === "dark" ? 0.15 : 0.06,
+        shadowRadius: 1.5,
         elevation: 1,
       },
       medium: {
         shadowColor: colors.text.primary,
         shadowOffset: {
           width: 0,
-          height: 4,
+          height: 2,
         },
-        shadowOpacity: theme.mode === "dark" ? 0.4 : 0.15,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOpacity: theme.mode === "dark" ? 0.25 : 0.1,
+        shadowRadius: 4,
+        elevation: 2,
       },
       high: {
         shadowColor: colors.text.primary,
         shadowOffset: {
           width: 0,
-          height: 8,
+          height: 4,
         },
-        shadowOpacity: theme.mode === "dark" ? 0.5 : 0.2,
-        shadowRadius: 16,
-        elevation: 8,
+        shadowOpacity: theme.mode === "dark" ? 0.35 : 0.15,
+        shadowRadius: 8,
+        elevation: 4,
       },
     };
+
+    // Disable shadows during animations to prevent visual artifacts
+    if (animating) {
+      return {
+        shadowOpacity: 0,
+        elevation: 0,
+      };
+    }
 
     // Reduce elevation for selected interactive cards to avoid too much visual weight
     if (variant === "interactive" && selected) {
@@ -131,6 +141,7 @@ export const Card: React.FC<CardProps> = ({
   const getCardStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
       borderRadius,
+      overflow: 'hidden',
     };
 
     // Padding variations
@@ -180,7 +191,11 @@ export const Card: React.FC<CardProps> = ({
         onPressOut={handlePressOut}
         activeOpacity={variant === "interactive" ? 1 : 0.7}
         disabled={disabled}
-        style={{ borderRadius }}
+        style={{ 
+          borderRadius,
+          backgroundColor: 'transparent',
+          overflow: 'hidden'
+        }}
       >
         {cardContent}
       </TouchableOpacity>

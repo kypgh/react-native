@@ -6,12 +6,10 @@ import { StatusBar } from "expo-status-bar";
 import { HomeScreenProps } from "../types";
 import { HomeScreenData, ClassItem } from "../types/api";
 import { spacing, useResponsiveLayout, useTheme } from "../theme";
-import { AnimatedListItem, FadeInView } from "../components";
+import { AnimatedListItem, FadeInView, DateScrollPicker } from "../components";
 import { 
-  formatWeekRange, 
-  generateWeekDays, 
-  isSameDay, 
-  formatClassTime 
+  formatClassTime,
+  isSameDay
 } from "../utils/dateUtils";
 import { formatAvailableSpots } from "../utils/formatUtils";
 import { mockHomeData } from "../data/mockHomeData";
@@ -19,17 +17,28 @@ import { mockHomeData } from "../data/mockHomeData";
 // Helper function for filtering classes
 const getFilteredClasses = (
   classes: ClassItem[],
-  filter: string
+  filter: string,
+  selectedDate: Date
 ): ClassItem[] => {
-  if (filter === "All Classes") {
-    return classes;
+  let filteredClasses = classes;
+  
+  // Filter by date first
+  filteredClasses = filteredClasses.filter((classItem) =>
+    isSameDay(classItem.date, selectedDate)
+  );
+  
+  // Then filter by category
+  if (filter !== "All Classes") {
+    filteredClasses = filteredClasses.filter((classItem) => classItem.category === filter);
   }
-  return classes.filter((classItem) => classItem.category === filter);
+  
+  return filteredClasses;
 };
 
 export default function HomeScreen({ navigation }: HomeScreenProps) {
   const [homeData] = useState<HomeScreenData>(mockHomeData);
   const [selectedFilter, setSelectedFilter] = useState<string>("All Classes");
+  const [selectedDate, setSelectedDate] = useState<Date>(homeData.selectedDate);
   const layout = useResponsiveLayout();
   const { theme } = useTheme();
   const styles = createStyles(layout, theme);
@@ -38,11 +47,12 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Purple Gradient Header */}
+      {/* Minimal Brand Banner with Fade */}
       <LinearGradient
-        colors={["#8B5CF6", "#7C3AED", "#6D28D9"]}
+        colors={["#8B5CF6", "#7C3AED", "rgba(124, 58, 237, 0.8)", "rgba(124, 58, 237, 0)"]}
+        locations={[0, 0.6, 0.85, 1.0]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 1 }}
         style={styles.header}
       >
         <View style={styles.headerContent}>
@@ -54,6 +64,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.content}>
           {/* Class Filter Tabs Section */}
@@ -92,67 +103,16 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             </View>
           </FadeInView>
 
-          {/* Weekly Calendar Section */}
+          {/* Date Selection Section */}
           <FadeInView delay={200}>
             <View style={styles.calendarSection}>
               <Text style={styles.sectionTitle}>Schedule</Text>
-
-              {/* Week Navigation */}
-              <View style={styles.weekNavigation}>
-                <TouchableOpacity style={styles.navArrow}>
-                  <Text style={styles.navArrowText}>‹</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.weekRange}>
-                  {formatWeekRange(
-                    homeData.selectedWeek.start,
-                    homeData.selectedWeek.end
-                  )}
-                </Text>
-
-                <TouchableOpacity style={styles.navArrow}>
-                  <Text style={styles.navArrowText}>›</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Days of Week Grid */}
-              <View style={styles.daysGrid}>
-                {generateWeekDays(homeData.selectedWeek.start).map(
-                  (day, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={[
-                        styles.dayCard,
-                        isSameDay(day.date, homeData.selectedDate) &&
-                          styles.dayCardActive,
-                      ]}
-                      onPress={() => {
-                        // In a real app, this would update the selected date
-                        // For now, we'll just show the visual feedback
-                      }}
-                    >
-                      <Text
-                        style={StyleSheet.flatten([
-                          styles.dayName,
-                          isSameDay(day.date, homeData.selectedDate) &&
-                            styles.dayNameActive,
-                        ])}
-                      >
-                        {day.name}
-                      </Text>
-                      <Text
-                        style={StyleSheet.flatten([
-                          styles.dayNumber,
-                          isSameDay(day.date, homeData.selectedDate) &&
-                            styles.dayNumberActive,
-                        ])}
-                      >
-                        {day.number}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-                )}
-              </View>
+              <DateScrollPicker
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                maxRange={2}
+                minRange={0}
+              />
             </View>
           </FadeInView>
 
@@ -161,7 +121,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <View style={styles.classListSection}>
               <Text style={styles.sectionTitle}>Available Classes</Text>
 
-              {getFilteredClasses(homeData.classes, selectedFilter).map(
+              {getFilteredClasses(homeData.classes, selectedFilter, selectedDate).map(
                 (classItem, index) => (
                   <AnimatedListItem
                     key={classItem.id}
@@ -216,7 +176,7 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 )
               )}
 
-              {getFilteredClasses(homeData.classes, selectedFilter).length ===
+              {getFilteredClasses(homeData.classes, selectedFilter, selectedDate).length ===
                 0 && (
                 <View style={styles.noClassesContainer}>
                   <Text style={styles.noClassesText}>
@@ -242,53 +202,65 @@ const createStyles = (
       backgroundColor: theme.colors.background,
     },
     header: {
-      paddingTop: layout.deviceType.isTablet ? 60 : 50, // Account for status bar and device size
-      paddingBottom: layout.sectionSpacing,
+      paddingTop: layout.deviceType.isTablet ? 35 : 25, // Much less status bar padding
+      paddingBottom: spacing.lg, // Reduced bottom padding
       paddingHorizontal: layout.containerPadding,
+      minHeight: layout.deviceType.isTablet ? 85 : 70, // Very compact
     },
     headerContent: {
       alignItems: "center",
+      justifyContent: "center", // Center content
+      flex: 1, // Take available space
     },
     gymName: {
       fontSize: layout.deviceType.isTablet
-        ? 32
-        : layout.deviceType.isSmallPhone
-        ? 24
-        : 28,
-      fontWeight: "bold",
-      color: "#FFFFFF",
-      marginBottom: spacing.xs,
-      textAlign: "center",
-    },
-    gymTagline: {
-      fontSize: layout.deviceType.isTablet
-        ? 18
-        : layout.deviceType.isSmallPhone
-        ? 14
-        : 16,
-      color: "#E5E7EB",
-      textAlign: "center",
-      lineHeight: layout.deviceType.isTablet
         ? 26
         : layout.deviceType.isSmallPhone
         ? 20
-        : 22,
+        : 24, // Smaller to fit in minimal height
+      fontWeight: "700", // Bold but not too heavy
+      color: "#FFFFFF",
+      marginBottom: 2, // Minimal margin between title and tagline
+      textAlign: "center",
+      letterSpacing: 0.2, // Normal spacing
+    },
+    gymTagline: {
+      fontSize: layout.deviceType.isTablet
+        ? 15
+        : layout.deviceType.isSmallPhone
+        ? 12
+        : 14, // Smaller for compact design
+      color: "rgba(255, 255, 255, 0.85)", // Subtle but readable
+      textAlign: "center",
+      lineHeight: layout.deviceType.isTablet
+        ? 22
+        : layout.deviceType.isSmallPhone
+        ? 16
+        : 20,
+      fontWeight: "400", // Normal weight
+      letterSpacing: 0.1,
     },
     scrollView: {
       flex: 1,
     },
+    scrollContent: {
+      flexGrow: 1,
+    },
     content: {
-      paddingBottom: layout.sectionSpacing,
+      paddingBottom: spacing.xl,
+      marginTop: -spacing.md, // Smaller overlap
     },
     filterSection: {
       paddingHorizontal: layout.containerPadding,
-      paddingVertical: layout.sectionSpacing,
+      paddingTop: spacing.lg, // Consistent top spacing
+      paddingBottom: spacing.md, // Less bottom spacing
+      backgroundColor: theme.colors.background,
     },
     filterHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      marginBottom: spacing.md,
+      marginBottom: spacing.sm, // Reduced spacing
     },
     viewDetailsButton: {
       fontSize: layout.deviceType.isTablet ? 16 : 14,
@@ -304,16 +276,24 @@ const createStyles = (
     filterTab: {
       paddingHorizontal: layout.deviceType.isTablet ? spacing.xl : spacing.lg,
       paddingVertical: layout.deviceType.isTablet ? spacing.lg : spacing.md,
-      marginRight: spacing.sm,
-      borderRadius: layout.deviceType.isTablet ? 24 : 20,
+      marginRight: spacing.md, // More space between tabs
+      borderRadius: layout.deviceType.isTablet ? 25 : 22, // More rounded
       backgroundColor: theme.colors.surface,
-      borderWidth: 1,
-      borderColor: theme.colors.text.muted,
-      minHeight: layout.buttonHeight * 0.8, // Ensure proper touch target
+      borderWidth: 0, // Remove border for cleaner look
+      minHeight: layout.buttonHeight * 0.8,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
     },
     filterTabActive: {
       backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
+      shadowColor: theme.colors.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 6,
     },
     filterTabText: {
       fontSize: layout.deviceType.isTablet
@@ -329,92 +309,25 @@ const createStyles = (
     },
     calendarSection: {
       paddingHorizontal: layout.containerPadding,
-      paddingVertical: layout.sectionSpacing,
-    },
-    weekNavigation: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: spacing.lg,
-    },
-    navArrow: {
-      width: Math.max(44, layout.deviceType.isTablet ? 48 : 40), // Ensure proper touch target
-      height: Math.max(44, layout.deviceType.isTablet ? 48 : 40),
-      borderRadius: Math.max(22, layout.deviceType.isTablet ? 24 : 20),
-      backgroundColor: theme.colors.surface,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    navArrowText: {
-      fontSize: layout.deviceType.isTablet ? 22 : 18,
-      fontWeight: "bold",
-      color: theme.colors.text.primary,
-    },
-    weekRange: {
-      fontSize: layout.deviceType.isTablet
-        ? 18
-        : layout.deviceType.isSmallPhone
-        ? 14
-        : 16,
-      fontWeight: "600",
-      color: theme.colors.text.primary,
-    },
-    daysGrid: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      gap: layout.cardSpacing / 2,
-    },
-    dayCard: {
-      flex: 1,
-      alignItems: "center",
-      paddingVertical: layout.deviceType.isTablet ? spacing.lg : spacing.md,
-      marginHorizontal: layout.deviceType.isSmallPhone ? 1 : 2,
-      borderRadius: layout.deviceType.isTablet ? 16 : 12,
-      backgroundColor: theme.colors.surface,
-      minHeight: Math.max(44, layout.deviceType.isTablet ? 60 : 50), // Ensure proper touch target
-    },
-    dayCardActive: {
-      backgroundColor: theme.colors.primary,
-    },
-    dayName: {
-      fontSize: layout.deviceType.isTablet
-        ? 14
-        : layout.deviceType.isSmallPhone
-        ? 10
-        : 12,
-      fontWeight: "500",
-      color: theme.colors.text.secondary,
-      marginBottom: spacing.xs,
-    },
-    dayNameActive: {
-      color: "#E5E7EB",
-    },
-    dayNumber: {
-      fontSize: layout.deviceType.isTablet
-        ? 18
-        : layout.deviceType.isSmallPhone
-        ? 14
-        : 16,
-      fontWeight: "bold",
-      color: theme.colors.text.primary,
-    },
-    dayNumberActive: {
-      color: "#FFFFFF",
+      paddingTop: spacing.md, // Reduced from layout.sectionSpacing
+      paddingBottom: spacing.sm, // Less bottom spacing
     },
     classListSection: {
       paddingHorizontal: layout.containerPadding,
-      paddingVertical: layout.sectionSpacing,
+      paddingTop: spacing.md, // Reduced from layout.sectionSpacing
+      paddingBottom: spacing.lg, // Consistent bottom spacing
     },
     classCard: {
       backgroundColor: theme.colors.surface,
-      borderRadius: layout.deviceType.isTablet ? 16 : 12,
+      borderRadius: layout.deviceType.isTablet ? 20 : 16, // More rounded for modern look
       padding: layout.deviceType.isTablet ? spacing.xl : spacing.lg,
-      marginBottom: spacing.md,
+      marginBottom: spacing.lg, // More space between cards
+      marginHorizontal: 2, // Slight margin for shadow
       shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      shadowOffset: { width: 0, height: 4 }, // Deeper shadow
+      shadowOpacity: 0.08, // Softer shadow
+      shadowRadius: 12, // More blur
+      elevation: 4,
     },
     classCardHeader: {
       flexDirection: layout.deviceType.isSmallPhone ? "column" : "row",
@@ -499,12 +412,12 @@ const createStyles = (
     },
     sectionTitle: {
       fontSize: layout.deviceType.isTablet
-        ? 24
+        ? 22
         : layout.deviceType.isSmallPhone
-        ? 18
-        : 20,
+        ? 17
+        : 19, // Slightly smaller
       fontWeight: "600",
       color: theme.colors.text.primary,
-      marginBottom: spacing.md,
+      marginBottom: spacing.sm, // Reduced from spacing.md
     },
   });

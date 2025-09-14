@@ -81,7 +81,7 @@ export default function ProfileScreen({}: ProfileScreenProps) {
       >
         {/* User Profile Section */}
         <AnimatedCard style={styles.profileCard} delay={0}>
-          <Card elevation="medium" padding="medium">
+          <Card elevation="low" padding="medium" animating={true}>
             <View style={styles.profileHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
               <Text style={[styles.avatarText, { color: "#FFFFFF" }]}>
@@ -116,7 +116,7 @@ export default function ProfileScreen({}: ProfileScreenProps) {
 
         {/* Active Brand Section */}
         <AnimatedCard style={styles.brandCard} delay={100}>
-          <Card elevation="medium" padding="medium">
+          <Card elevation="low" padding="medium" animating={true}>
             <View style={styles.brandHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               Active Brand
@@ -147,7 +147,7 @@ export default function ProfileScreen({}: ProfileScreenProps) {
 
         {/* Personal Information Section */}
         <AnimatedCard style={styles.personalInfoCard} delay={200}>
-          <Card elevation="medium" padding="medium">
+          <Card elevation="low" padding="medium" animating={true}>
             <View style={styles.personalInfoHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               Personal Information
@@ -338,7 +338,7 @@ export default function ProfileScreen({}: ProfileScreenProps) {
 
         {/* Theme Settings Section */}
         <AnimatedCard style={styles.themeCard} delay={300}>
-          <Card elevation="medium" padding="medium">
+          <Card elevation="low" padding="medium" animating={true}>
             <View style={styles.themeHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
               Theme Settings

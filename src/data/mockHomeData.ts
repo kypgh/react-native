@@ -14,6 +14,7 @@ export const mockHomeData: HomeScreenData = {
   },
   selectedDate: new Date("2025-09-13"),
   classes: [
+    // September 13th classes
     {
       id: "1",
       name: "Weekend Pilates Fusion",
@@ -43,6 +44,69 @@ export const mockHomeData: HomeScreenData = {
       totalSpots: 12,
       instructor: "Emma Davis",
       category: "Basic Fitness",
+    },
+    // September 14th classes
+    {
+      id: "4",
+      name: "Sunday Morning Stretch",
+      date: new Date("2025-09-14T09:00:00"),
+      duration: 45,
+      availableSpots: 15,
+      totalSpots: 20,
+      instructor: "Lisa Park",
+      category: "Basic Fitness",
+    },
+    {
+      id: "5",
+      name: "CrossFit Endurance",
+      date: new Date("2025-09-14T11:00:00"),
+      duration: 75,
+      availableSpots: 3,
+      totalSpots: 12,
+      instructor: "Jake Wilson",
+      category: "CrossFit WOD",
+    },
+    // September 15th classes
+    {
+      id: "6",
+      name: "Monday Power Hour",
+      date: new Date("2025-09-15T06:30:00"),
+      duration: 60,
+      availableSpots: 10,
+      totalSpots: 16,
+      instructor: "Alex Rodriguez",
+      category: "CrossFit WOD",
+    },
+    {
+      id: "7",
+      name: "Gentle Morning Flow",
+      date: new Date("2025-09-15T08:00:00"),
+      duration: 60,
+      availableSpots: 7,
+      totalSpots: 14,
+      instructor: "Emma Davis",
+      category: "Basic Fitness",
+    },
+    // September 16th classes
+    {
+      id: "8",
+      name: "Tuesday Strength Training",
+      date: new Date("2025-09-16T17:00:00"),
+      duration: 90,
+      availableSpots: 6,
+      totalSpots: 18,
+      instructor: "Mike Chen",
+      category: "Basic Fitness",
+    },
+    {
+      id: "9",
+      name: "HIIT Circuit",
+      date: new Date("2025-09-16T19:00:00"),
+      duration: 45,
+      availableSpots: 4,
+      totalSpots: 10,
+      instructor: "Sarah Johnson",
+      category: "CrossFit WOD",
     },
   ],
 };

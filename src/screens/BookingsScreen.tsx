@@ -143,6 +143,7 @@ export default function BookingsScreen({ }: BookingsScreenProps) {
                 variant="default"
                 padding="medium"
                 style={styles.bookingCardContent}
+                animating={true}
               >
                 <View style={styles.bookingHeader}>
                   <View style={styles.bookingInfo}>

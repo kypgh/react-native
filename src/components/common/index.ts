@@ -12,3 +12,6 @@ export type { StatsCardProps } from './StatsCard';
 
 export * from './AnimatedComponents';
 export * from './LoadingOverlay';
+
+export { DateScrollPicker } from './DateScrollPicker';
+export type { DateScrollPickerProps, DateItem } from './DateScrollPicker';
