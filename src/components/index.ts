@@ -2,3 +2,4 @@
 export * from './ThemedComponents';
 export * from './ErrorBoundary';
 export * from './common';
+export { default as StripeProvider } from './StripeProvider';

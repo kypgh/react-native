@@ -27,8 +27,7 @@ export default function AppNavigator() {
   const { theme } = useTheme();
   
   return (
-    <NavigationContainer>
-      <Tab.Navigator
+    <Tab.Navigator
         initialRouteName="Home"
         screenOptions={({ route }) => ({
           // Add smooth transitions between tabs
@@ -116,6 +115,5 @@ export default function AppNavigator() {
           }}
         />
       </Tab.Navigator>
-    </NavigationContainer>
   );
 }

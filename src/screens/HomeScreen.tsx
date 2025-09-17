@@ -1,63 +1,107 @@
-import React, { useState } from "react";
-import { StyleSheet, View, ScrollView, TouchableOpacity } from "react-native";
-import { Text } from "react-native-elements";
+import React, { useCallback, useMemo } from "react";
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  Text,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
 import { HomeScreenProps } from "../types";
-import { HomeScreenData, ClassItem } from "../types/api";
+import { Session } from "../types/api";
 import { spacing, useResponsiveLayout, useTheme } from "../theme";
 import { AnimatedListItem, FadeInView, DateScrollPicker } from "../components";
-import { 
-  formatClassTime,
-  isSameDay
-} from "../utils/dateUtils";
+import {
+  ErrorDisplay,
+  HomeScreenSkeleton,
+  ClassCategoriesContentSkeleton,
+  ClassListContentSkeleton,
+} from "../components/common";
 import { formatAvailableSpots } from "../utils/formatUtils";
-import { mockHomeData } from "../data/mockHomeData";
+import { useHomeData } from "../hooks/useHomeData";
+import {
+  createGymInfoFromBrand,
+  formatSessionTime,
+  getSessionDurationText,
+  hasLowAvailability,
+} from "../utils/homeDataTransformer";
 
-// Helper function for filtering classes
-const getFilteredClasses = (
-  classes: ClassItem[],
-  filter: string,
-  selectedDate: Date
-): ClassItem[] => {
-  let filteredClasses = classes;
-  
-  // Filter by date first
-  filteredClasses = filteredClasses.filter((classItem) =>
-    isSameDay(classItem.date, selectedDate)
-  );
-  
-  // Then filter by category
-  if (filter !== "All Classes") {
-    filteredClasses = filteredClasses.filter((classItem) => classItem.category === filter);
-  }
-  
-  return filteredClasses;
-};
-
-export default function HomeScreen({ navigation }: HomeScreenProps) {
-  const [homeData] = useState<HomeScreenData>(mockHomeData);
-  const [selectedFilter, setSelectedFilter] = useState<string>("All Classes");
-  const [selectedDate, setSelectedDate] = useState<Date>(homeData.selectedDate);
+export default function HomeScreen(_props: HomeScreenProps) {
   const layout = useResponsiveLayout();
   const { theme } = useTheme();
   const styles = createStyles(layout, theme);
+
+  // Use the home data hook for real API integration
+  const {
+    brands,
+    selectedDate,
+    selectedCategory,
+    isLoading,
+    error,
+    isRefreshing,
+    filteredSessions,
+    availableCategories,
+    availableDates,
+    hasData,
+    hasAnySessions,
+    setSelectedDate,
+    setSelectedCategory,
+    refreshData,
+    retryWithDelay,
+  } = useHomeData();
+
+  // Create gym info from the first brand or use fallback
+  const gymInfo = useMemo(() => {
+    return createGymInfoFromBrand(brands[0]);
+  }, [brands]);
+
+  // Handle refresh
+  const onRefresh = useCallback(() => {
+    refreshData();
+  }, [refreshData]);
+
+  // Handle book button press
+  const handleBookClass = useCallback((session: Session) => {
+    // TODO: Navigate to booking screen or show booking modal
+    console.log("Book class:", session.class?.name);
+  }, []);
+
+  // Show error state if there's an error and no data
+  if (error && !hasData) {
+    const handleRetry =
+      error.code === "RATE_LIMIT" ? () => retryWithDelay(5000) : refreshData;
+
+    return (
+      <View style={styles.container}>
+        <StatusBar style="light" />
+        <ErrorDisplay
+          error={error}
+          onRetry={handleRetry}
+          style={styles.errorContainer}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Minimal Brand Banner with Fade */}
+      {/* Modern Clean Header */}
       <LinearGradient
-        colors={["#8B5CF6", "#7C3AED", "rgba(124, 58, 237, 0.8)", "rgba(124, 58, 237, 0)"]}
-        locations={[0, 0.6, 0.85, 1.0]}
+        colors={["#6366F1", "#8B5CF6"]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 0 }}
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.gymName}>{homeData.gymInfo.name}</Text>
-          <Text style={styles.gymTagline}>{homeData.gymInfo.tagline}</Text>
+          <Text style={styles.gymName}>{gymInfo.name}</Text>
+          <View style={styles.taglineContainer}>
+            <View style={styles.taglineDot} />
+            <Text style={styles.gymTagline}>{gymInfo.tagline}</Text>
+          </View>
         </View>
       </LinearGradient>
 
@@ -65,6 +109,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+          />
+        }
       >
         <View style={styles.content}>
           {/* Class Filter Tabs Section */}
@@ -74,32 +126,41 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 <Text style={styles.sectionTitle}>Class Categories</Text>
                 <Text style={styles.viewDetailsButton}>View Details</Text>
               </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.filterTabsContainer}
-                contentContainerStyle={styles.filterTabsContent}
-              >
-                {homeData.classFilters.map((filter, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.filterTab,
-                      selectedFilter === filter && styles.filterTabActive,
-                    ]}
-                    onPress={() => setSelectedFilter(filter)}
-                  >
-                    <Text
-                      style={StyleSheet.flatten([
-                        styles.filterTabText,
-                        selectedFilter === filter && styles.filterTabTextActive,
-                      ])}
+
+              {isLoading && !hasData ? (
+                <ClassCategoriesContentSkeleton />
+              ) : (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.filterTabsContainer}
+                  contentContainerStyle={styles.filterTabsContent}
+                >
+                  {availableCategories.map((filter, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        styles.filterTab,
+                        selectedCategory === filter
+                          ? styles.filterTabActive
+                          : null,
+                      ]}
+                      onPress={() => setSelectedCategory(filter)}
                     >
-                      {filter}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+                      <Text
+                        style={[
+                          styles.filterTabText,
+                          selectedCategory === filter
+                            ? styles.filterTabTextActive
+                            : null,
+                        ]}
+                      >
+                        {filter}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
             </View>
           </FadeInView>
 
@@ -112,6 +173,8 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                 onDateSelect={setSelectedDate}
                 maxRange={2}
                 minRange={0}
+                disabled={isLoading && !hasData}
+                availableDates={availableDates}
               />
             </View>
           </FadeInView>
@@ -121,24 +184,59 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
             <View style={styles.classListSection}>
               <Text style={styles.sectionTitle}>Available Classes</Text>
 
-              {getFilteredClasses(homeData.classes, selectedFilter, selectedDate).map(
-                (classItem, index) => (
+              {/* Show error banner if there's an error but we have data */}
+              {error && hasData && (
+                <ErrorDisplay
+                  error={error}
+                  onRetry={
+                    error.code === "RATE_LIMIT"
+                      ? () => retryWithDelay(5000)
+                      : refreshData
+                  }
+                  compact={true}
+                  style={styles.errorBanner}
+                />
+              )}
+
+              {/* Show loading skeleton for class list if loading or refreshing */}
+              {(isLoading && !hasData) || isRefreshing ? (
+                <ClassListContentSkeleton />
+              ) : (
+                filteredSessions.map((session, index) => (
                   <AnimatedListItem
-                    key={classItem.id}
+                    key={session._id}
                     index={index}
                     style={styles.classCard}
                   >
                     <View style={styles.classCardHeader}>
                       <View style={styles.classInfo}>
-                        <Text style={styles.className}>{classItem.name}</Text>
+                        <Text style={styles.className}>
+                          {session.class?.name || "Unknown Class"}
+                        </Text>
                         <Text style={styles.classInstructor}>
-                          {classItem.instructor
-                            ? `with ${classItem.instructor}`
-                            : "Instructor TBA"}
+                          {session.brand?.name || "Instructor TBA"}
                         </Text>
                       </View>
-                      <TouchableOpacity style={styles.bookButton}>
-                        <Text style={styles.bookButtonText}>Book</Text>
+                      <TouchableOpacity
+                        style={[
+                          styles.bookButton,
+                          session.availableSpots <= 0
+                            ? styles.bookButtonDisabled
+                            : null,
+                        ]}
+                        onPress={() => handleBookClass(session)}
+                        disabled={session.availableSpots <= 0}
+                      >
+                        <Text
+                          style={[
+                            styles.bookButtonText,
+                            session.availableSpots <= 0
+                              ? styles.bookButtonTextDisabled
+                              : null,
+                          ]}
+                        >
+                          {session.availableSpots <= 0 ? "Full" : "Book"}
+                        </Text>
                       </TouchableOpacity>
                     </View>
 
@@ -146,14 +244,14 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                       <View style={styles.classDetailItem}>
                         <Text style={styles.classDetailLabel}>Time</Text>
                         <Text style={styles.classDetailValue}>
-                          {formatClassTime(classItem.date)}
+                          {formatSessionTime(session)}
                         </Text>
                       </View>
 
                       <View style={styles.classDetailItem}>
                         <Text style={styles.classDetailLabel}>Duration</Text>
                         <Text style={styles.classDetailValue}>
-                          {classItem.duration} min
+                          {getSessionDurationText(session)}
                         </Text>
                       </View>
 
@@ -162,28 +260,53 @@ export default function HomeScreen({ navigation }: HomeScreenProps) {
                           Available Spots
                         </Text>
                         <Text
-                          style={StyleSheet.flatten([
+                          style={[
                             styles.classDetailValue,
-                            classItem.availableSpots <= 5 &&
-                              styles.lowSpotsText,
-                          ])}
+                            hasLowAvailability(session)
+                              ? styles.lowSpotsText
+                              : null,
+                          ]}
                         >
-                          {formatAvailableSpots(classItem.availableSpots, classItem.totalSpots)}
+                          {formatAvailableSpots(
+                            session.availableSpots,
+                            session.capacity
+                          )}
                         </Text>
                       </View>
                     </View>
                   </AnimatedListItem>
-                )
+                ))
               )}
 
-              {getFilteredClasses(homeData.classes, selectedFilter, selectedDate).length ===
-                0 && (
+              {!hasAnySessions && !isLoading && !isRefreshing && (
                 <View style={styles.noClassesContainer}>
                   <Text style={styles.noClassesText}>
-                    No classes available for "{selectedFilter}"
+                    No sessions are currently available. Please check back
+                    later.
                   </Text>
+                  <TouchableOpacity
+                    style={styles.refreshButton}
+                    onPress={refreshData}
+                  >
+                    <Text style={styles.refreshButtonText}>Refresh</Text>
+                  </TouchableOpacity>
                 </View>
               )}
+
+              {hasAnySessions &&
+                filteredSessions.length === 0 &&
+                !isLoading &&
+                !isRefreshing && (
+                  <View style={styles.noClassesContainer}>
+                    <Text style={styles.noClassesText}>
+                      No "{selectedCategory}" classes available on{" "}
+                      {selectedDate.toLocaleDateString()}
+                    </Text>
+                    <Text style={styles.noClassesSubtext}>
+                      Try selecting a different category or date.
+                    </Text>
+                  </View>
+                )}
             </View>
           </FadeInView>
         </View>
@@ -202,43 +325,53 @@ const createStyles = (
       backgroundColor: theme.colors.background,
     },
     header: {
-      paddingTop: layout.deviceType.isTablet ? 35 : 25, // Much less status bar padding
-      paddingBottom: spacing.lg, // Reduced bottom padding
+      paddingTop: spacing.md,
+      paddingBottom: spacing.md,
       paddingHorizontal: layout.containerPadding,
-      minHeight: layout.deviceType.isTablet ? 85 : 70, // Very compact
+      borderRadius: 16,
+      marginHorizontal: spacing.sm,
+      marginTop: spacing.sm,
+      shadowColor: "#6366F1",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 12,
+      elevation: 8,
     },
     headerContent: {
-      alignItems: "center",
-      justifyContent: "center", // Center content
-      flex: 1, // Take available space
+      alignItems: "flex-start",
+      justifyContent: "center",
     },
     gymName: {
       fontSize: layout.deviceType.isTablet
-        ? 26
+        ? 22
         : layout.deviceType.isSmallPhone
-        ? 20
-        : 24, // Smaller to fit in minimal height
-      fontWeight: "700", // Bold but not too heavy
+        ? 18
+        : 20,
+      fontWeight: "700",
       color: "#FFFFFF",
-      marginBottom: 2, // Minimal margin between title and tagline
-      textAlign: "center",
-      letterSpacing: 0.2, // Normal spacing
+      marginBottom: spacing.xs,
+      letterSpacing: 0.3,
+    },
+    taglineContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    taglineDot: {
+      width: 4,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: "rgba(255, 255, 255, 0.7)",
+      marginRight: spacing.xs,
     },
     gymTagline: {
       fontSize: layout.deviceType.isTablet
-        ? 15
+        ? 13
         : layout.deviceType.isSmallPhone
-        ? 12
-        : 14, // Smaller for compact design
-      color: "rgba(255, 255, 255, 0.85)", // Subtle but readable
-      textAlign: "center",
-      lineHeight: layout.deviceType.isTablet
-        ? 22
-        : layout.deviceType.isSmallPhone
-        ? 16
-        : 20,
-      fontWeight: "400", // Normal weight
-      letterSpacing: 0.1,
+        ? 11
+        : 12,
+      color: "rgba(255, 255, 255, 0.9)",
+      fontWeight: "500",
+      letterSpacing: 0.2,
     },
     scrollView: {
       flex: 1,
@@ -409,6 +542,25 @@ const createStyles = (
       fontSize: layout.deviceType.isTablet ? 18 : 16,
       color: theme.colors.text.secondary,
       textAlign: "center",
+      marginBottom: spacing.md,
+    },
+    noClassesSubtext: {
+      fontSize: layout.deviceType.isTablet ? 14 : 12,
+      color: theme.colors.text.muted,
+      textAlign: "center",
+      marginBottom: spacing.md,
+    },
+    refreshButton: {
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: 8,
+      alignSelf: "center",
+    },
+    refreshButtonText: {
+      color: "#FFFFFF",
+      fontSize: 14,
+      fontWeight: "600",
     },
     sectionTitle: {
       fontSize: layout.deviceType.isTablet
@@ -419,5 +571,21 @@ const createStyles = (
       fontWeight: "600",
       color: theme.colors.text.primary,
       marginBottom: spacing.sm, // Reduced from spacing.md
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: layout.containerPadding,
+    },
+    errorBanner: {
+      marginBottom: spacing.md,
+    },
+
+    bookButtonDisabled: {
+      backgroundColor: theme.colors.surface,
+    },
+    bookButtonTextDisabled: {
+      color: theme.colors.text.muted,
     },
   });

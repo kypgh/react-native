@@ -17,6 +17,7 @@ export interface DateItem {
   monthName: string;
   isSelected: boolean;
   isToday: boolean;
+  isDisabled: boolean;
 }
 
 export interface DateScrollPickerProps {
@@ -24,6 +25,8 @@ export interface DateScrollPickerProps {
   onDateSelect: (date: Date) => void;
   maxRange?: number; // months from current date (default: 2)
   minRange?: number; // months before current date (default: 0)
+  disabled?: boolean; // disable interaction when loading
+  availableDates?: Date[]; // dates that have sessions available
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -33,6 +36,8 @@ export const DateScrollPicker: React.FC<DateScrollPickerProps> = ({
   onDateSelect,
   maxRange = 2,
   minRange = 0,
+  disabled = false,
+  availableDates = [],
 }) => {
   const { theme } = useTheme();
   const layout = useResponsiveLayout();
@@ -53,12 +58,20 @@ export const DateScrollPicker: React.FC<DateScrollPickerProps> = ({
     
     const currentDate = new Date(startDate);
     
+    // Create a set of available date timestamps for quick lookup
+    const availableDateTimes = new Set(
+      availableDates.map(date => new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime())
+    );
+    
     while (currentDate <= endDate) {
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const monthNames = [
         'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
       ];
+      
+      const currentDateNormalized = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      const hasAvailableSessions = availableDateTimes.has(currentDateNormalized.getTime());
       
       items.push({
         date: new Date(currentDate),
@@ -67,13 +80,14 @@ export const DateScrollPicker: React.FC<DateScrollPickerProps> = ({
         monthName: monthNames[currentDate.getMonth()],
         isSelected: isSameDay(currentDate, selectedDate),
         isToday: isSameDay(currentDate, today),
+        isDisabled: !hasAvailableSessions && availableDates.length > 0, // Only disable if we have available dates but this isn't one
       });
       
       currentDate.setDate(currentDate.getDate() + 1);
     }
     
     return items;
-  }, [selectedDate, maxRange, minRange]);
+  }, [selectedDate, maxRange, minRange, availableDates]);
 
 
 
@@ -97,8 +111,10 @@ export const DateScrollPicker: React.FC<DateScrollPickerProps> = ({
     }
   }, [selectedDate, dateItems, itemWidth]);
 
-  const handleDatePress = (date: Date) => {
-    onDateSelect(date);
+  const handleDatePress = (date: Date, isDateDisabled: boolean) => {
+    if (!disabled && !isDateDisabled) {
+      onDateSelect(date);
+    }
   };
 
   return (
@@ -120,9 +136,11 @@ export const DateScrollPicker: React.FC<DateScrollPickerProps> = ({
               { width: itemWidth },
               item.isSelected && styles.dateItemSelected,
               item.isToday && !item.isSelected && styles.dateItemToday,
+              (disabled || item.isDisabled) && styles.dateItemDisabled,
             ]}
-            onPress={() => handleDatePress(item.date)}
-            activeOpacity={0.7}
+            onPress={() => handleDatePress(item.date, item.isDisabled)}
+            activeOpacity={(disabled || item.isDisabled) ? 1 : 0.7}
+            disabled={disabled || item.isDisabled}
           >
             <Text
               style={StyleSheet.flatten([
@@ -193,6 +211,9 @@ const createStyles = (
     dateItemToday: {
       borderColor: theme.colors.primary,
       borderWidth: 1,
+    },
+    dateItemDisabled: {
+      opacity: 0.5,
     },
     dayName: {
       fontSize: layout.deviceType.isTablet ? 12 : 10,

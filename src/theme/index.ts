@@ -5,6 +5,7 @@ export * from './spacing';
 export * from './types';
 export * from './utils';
 export * from './ThemeProvider';
+export { useTheme } from './ThemeProvider';
 export * from './styleUtils';
 export * from './responsive';
 export * from './useResponsiveLayout';
