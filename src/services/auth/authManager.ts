@@ -20,7 +20,9 @@ class AuthManager implements IAuthManager {
   private storageConfig: SecureStorageConfig;
   private eventListeners: Map<AuthManagerEvents, EventListener[]> = new Map();
   private refreshPromise: Promise<string | null> | null = null;
+  private lastRefreshAttempt: number = 0;
   private readonly STORAGE_KEY = 'BookingAppAuth_tokens';
+  private readonly REFRESH_COOLDOWN = 5000; // 5 seconds cooldown between refresh attempts
 
   private constructor() {
     this.storageConfig = {
@@ -136,17 +138,33 @@ class AuthManager implements IAuthManager {
     }
   }
 
-  public async getAccessToken(): Promise<string | null> {
+  public async getAccessToken(skipRefresh: boolean = false): Promise<string | null> {
     try {
       const tokenStorage = await this.getStoredTokenData();
       
       if (!tokenStorage) {
+        console.log('❌ No token storage found');
         return null;
       }
       
-      // Check if token is expired
-      if (Date.now() >= tokenStorage.expiresAt) {
-        console.log('🔄 Token expired, refreshing...');
+      // If skipRefresh is true, return token even if expired (used during refresh)
+      if (skipRefresh) {
+        return tokenStorage.accessToken;
+      }
+      
+      // Check if token is expired (with 5 minute buffer)
+      const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+      const now = Date.now();
+      
+      if (now >= (tokenStorage.expiresAt - bufferTime)) {
+        // Check cooldown to prevent rapid refresh attempts
+        if (now - this.lastRefreshAttempt < this.REFRESH_COOLDOWN) {
+          console.log('🔄 Refresh cooldown active, returning current token');
+          return tokenStorage.accessToken;
+        }
+        
+        console.log('🔄 Token expired or expiring soon, refreshing...');
+        this.lastRefreshAttempt = now;
         return await this.refreshAccessToken();
       }
 
@@ -225,13 +243,16 @@ class AuthManager implements IAuthManager {
   public async refreshAccessToken(): Promise<string | null> {
     // Prevent multiple simultaneous refresh attempts
     if (this.refreshPromise) {
+      console.log('🔄 Refresh already in progress, waiting...');
       return this.refreshPromise;
     }
 
+    console.log('🔄 Starting token refresh...');
     this.refreshPromise = this.performTokenRefresh();
     
     try {
       const result = await this.refreshPromise;
+      console.log('🔄 Token refresh completed:', !!result);
       return result;
     } finally {
       this.refreshPromise = null;
@@ -268,17 +289,15 @@ class AuthManager implements IAuthManager {
           throw new Error('Failed to get new access token after refresh');
         }
         
-        return tokenStorage.accessToken;
-        
         this.emitEvent(AuthManagerEvents.TOKEN_REFRESHED, { 
-          accessToken: newAccessToken 
+          accessToken: tokenStorage.accessToken 
         });
 
         if (__DEV__) {
           console.log('✅ Token refreshed successfully');
         }
-
-        return newAccessToken;
+        
+        return tokenStorage.accessToken;
 
       } catch (error) {
         retryCount++;
@@ -317,11 +336,17 @@ class AuthManager implements IAuthManager {
         return false;
       }
       
-      const accessToken = await this.getAccessToken();
-      const isAuth = !!accessToken;
+      // Check if we have tokens and they're not completely expired
+      // Don't trigger refresh here to avoid infinite loops during auth checks
+      const hasValidTokens = tokenStorage.accessToken && tokenStorage.refreshToken;
+      const isNotCompletelyExpired = Date.now() < tokenStorage.expiresAt + (60 * 60 * 1000); // 1 hour grace period
       
-      if (!isAuth) {
-        console.log('❌ Auth failed - token invalid');
+      const isAuth = hasValidTokens && isNotCompletelyExpired;
+      
+      if (isAuth) {
+        console.log('✅ Authentication valid');
+      } else {
+        console.log('❌ Auth failed - no valid tokens or completely expired');
       }
       
       return isAuth;

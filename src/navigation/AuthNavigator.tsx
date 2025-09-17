@@ -25,17 +25,7 @@ export default function AuthNavigator() {
     try {
       const authManager = AuthManager.getInstance();
       
-      // Add timeout to prevent infinite loops
-      const authCheckPromise = authManager.isAuthenticated();
-      const timeoutPromise = new Promise<boolean>((resolve) => {
-        setTimeout(() => {
-          console.log('⏰ Auth check timeout, clearing tokens');
-          authManager.clearTokens();
-          resolve(false);
-        }, 5000); // 5 second timeout
-      });
-      
-      const isAuthenticated = await Promise.race([authCheckPromise, timeoutPromise]);
+      const isAuthenticated = await authManager.isAuthenticated();
       
       if (!isAuthenticated) {
         console.log('🔐 → Login (no auth)');

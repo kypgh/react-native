@@ -702,7 +702,9 @@ export interface TokenRefreshResponse {
 
 // Profile Response Type
 export interface ProfileResponse {
-  client: ClientProfile;
+  data: {
+    client: ClientProfile;
+  };
 }
 
 // Single Item Response Types

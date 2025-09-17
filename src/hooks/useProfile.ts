@@ -11,7 +11,6 @@ interface UseProfileState {
   profile: ClientProfile | null;
   isLoading: boolean;
   isUpdating: boolean;
-  isUploadingPhoto: boolean;
   error: string | null;
   lastUpdated: Date | null;
 }
@@ -19,13 +18,6 @@ interface UseProfileState {
 interface UseProfileActions {
   fetchProfile: () => Promise<void>;
   updateProfile: (data: ProfileUpdateData) => Promise<boolean>;
-  updatePreferences: (preferences: ClientProfile['preferences']) => Promise<boolean>;
-  uploadProfilePhoto: (photoUri: string) => Promise<boolean>;
-  deleteProfilePhoto: () => Promise<boolean>;
-  updateNotificationPreferences: (notifications: ClientProfile['preferences']['notifications']) => Promise<boolean>;
-  updateFavoriteCategories: (categories: string[]) => Promise<boolean>;
-  updatePreferredDifficulty: (difficulty: 'beginner' | 'intermediate' | 'advanced') => Promise<boolean>;
-  updateTimezone: (timezone: string) => Promise<boolean>;
   clearError: () => void;
   refreshProfile: () => Promise<void>;
 }
@@ -41,7 +33,6 @@ export const useProfile = (): UseProfileReturn => {
     profile: null,
     isLoading: false,
     isUpdating: false,
-    isUploadingPhoto: false,
     error: null,
     lastUpdated: null,
   });
@@ -89,8 +80,9 @@ export const useProfile = (): UseProfileReturn => {
       handleApiResponse(
         response,
         (data: ProfileResponse) => {
+          
           updateState({
-            profile: data.client,
+            profile: data.data.client,
             lastUpdated: new Date(),
           });
         },
@@ -120,7 +112,7 @@ export const useProfile = (): UseProfileReturn => {
         response,
         (responseData: ProfileResponse) => {
           updateState({
-            profile: responseData.client,
+            profile: responseData.data.client,
             lastUpdated: new Date(),
           });
         },
@@ -141,253 +133,7 @@ export const useProfile = (): UseProfileReturn => {
     }
   }, [updateState, handleApiResponse]);
 
-  /**
-   * Update user preferences
-   */
-  const updatePreferences = useCallback(async (preferences: ClientProfile['preferences']): Promise<boolean> => {
-    updateState({ isUpdating: true, error: null });
-    
-    try {
-      const response = await profileService.updatePreferences(preferences);
-      
-      const success = handleApiResponse(
-        response,
-        (data: ProfileResponse) => {
-          updateState({
-            profile: data.client,
-            lastUpdated: new Date(),
-          });
-        },
-        'updatePreferences'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to update preferences' });
-      
-      if (__DEV__) {
-        console.error('Preferences update error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUpdating: false });
-    }
-  }, [updateState, handleApiResponse]);
 
-  /**
-   * Upload profile photo
-   */
-  const uploadProfilePhoto = useCallback(async (photoUri: string): Promise<boolean> => {
-    updateState({ isUploadingPhoto: true, error: null });
-    
-    try {
-      const response = await profileService.uploadProfilePhoto(photoUri);
-      
-      const success = handleApiResponse(
-        response,
-        (data: { profilePhoto: string }) => {
-          // Update profile with new photo URL
-          if (state.profile) {
-            updateState({
-              profile: {
-                ...state.profile,
-                profilePhoto: data.profilePhoto,
-              },
-              lastUpdated: new Date(),
-            });
-          }
-        },
-        'uploadProfilePhoto'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to upload profile photo' });
-      
-      if (__DEV__) {
-        console.error('Photo upload error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUploadingPhoto: false });
-    }
-  }, [state.profile, updateState, handleApiResponse]);
-
-  /**
-   * Delete profile photo
-   */
-  const deleteProfilePhoto = useCallback(async (): Promise<boolean> => {
-    updateState({ isUpdating: true, error: null });
-    
-    try {
-      const response = await profileService.deleteProfilePhoto();
-      
-      const success = handleApiResponse(
-        response,
-        (data: ProfileResponse) => {
-          updateState({
-            profile: data.client,
-            lastUpdated: new Date(),
-          });
-        },
-        'deleteProfilePhoto'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to delete profile photo' });
-      
-      if (__DEV__) {
-        console.error('Photo delete error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUpdating: false });
-    }
-  }, [updateState, handleApiResponse]);
-
-  /**
-   * Update notification preferences
-   */
-  const updateNotificationPreferences = useCallback(async (
-    notifications: ClientProfile['preferences']['notifications']
-  ): Promise<boolean> => {
-    updateState({ isUpdating: true, error: null });
-    
-    try {
-      const response = await profileService.updateNotificationPreferences(notifications);
-      
-      const success = handleApiResponse(
-        response,
-        (data: ProfileResponse) => {
-          updateState({
-            profile: data.client,
-            lastUpdated: new Date(),
-          });
-        },
-        'updateNotificationPreferences'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to update notification preferences' });
-      
-      if (__DEV__) {
-        console.error('Notification preferences update error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUpdating: false });
-    }
-  }, [updateState, handleApiResponse]);
-
-  /**
-   * Update favorite categories
-   */
-  const updateFavoriteCategories = useCallback(async (categories: string[]): Promise<boolean> => {
-    updateState({ isUpdating: true, error: null });
-    
-    try {
-      const response = await profileService.updateFavoriteCategories(categories);
-      
-      const success = handleApiResponse(
-        response,
-        (data: ProfileResponse) => {
-          updateState({
-            profile: data.client,
-            lastUpdated: new Date(),
-          });
-        },
-        'updateFavoriteCategories'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to update favorite categories' });
-      
-      if (__DEV__) {
-        console.error('Favorite categories update error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUpdating: false });
-    }
-  }, [updateState, handleApiResponse]);
-
-  /**
-   * Update preferred difficulty
-   */
-  const updatePreferredDifficulty = useCallback(async (
-    difficulty: 'beginner' | 'intermediate' | 'advanced'
-  ): Promise<boolean> => {
-    updateState({ isUpdating: true, error: null });
-    
-    try {
-      const response = await profileService.updatePreferredDifficulty(difficulty);
-      
-      const success = handleApiResponse(
-        response,
-        (data: ProfileResponse) => {
-          updateState({
-            profile: data.client,
-            lastUpdated: new Date(),
-          });
-        },
-        'updatePreferredDifficulty'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to update preferred difficulty' });
-      
-      if (__DEV__) {
-        console.error('Preferred difficulty update error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUpdating: false });
-    }
-  }, [updateState, handleApiResponse]);
-
-  /**
-   * Update timezone preference
-   */
-  const updateTimezone = useCallback(async (timezone: string): Promise<boolean> => {
-    updateState({ isUpdating: true, error: null });
-    
-    try {
-      const response = await profileService.updateTimezone(timezone);
-      
-      const success = handleApiResponse(
-        response,
-        (data: ProfileResponse) => {
-          updateState({
-            profile: data.client,
-            lastUpdated: new Date(),
-          });
-        },
-        'updateTimezone'
-      );
-      
-      return success;
-    } catch (error) {
-      updateState({ error: 'Failed to update timezone' });
-      
-      if (__DEV__) {
-        console.error('Timezone update error:', error);
-      }
-      
-      return false;
-    } finally {
-      updateState({ isUpdating: false });
-    }
-  }, [updateState, handleApiResponse]);
 
   /**
    * Clear error state
@@ -415,20 +161,12 @@ export const useProfile = (): UseProfileReturn => {
     profile: state.profile,
     isLoading: state.isLoading,
     isUpdating: state.isUpdating,
-    isUploadingPhoto: state.isUploadingPhoto,
     error: state.error,
     lastUpdated: state.lastUpdated,
 
     // Actions
     fetchProfile,
     updateProfile,
-    updatePreferences,
-    uploadProfilePhoto,
-    deleteProfilePhoto,
-    updateNotificationPreferences,
-    updateFavoriteCategories,
-    updatePreferredDifficulty,
-    updateTimezone,
     clearError,
     refreshProfile,
   };

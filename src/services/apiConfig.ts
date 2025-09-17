@@ -105,7 +105,7 @@ export const API_ENDPOINTS = {
     REGISTER: "/auth/client/register",
     REFRESH: "/auth/client/refresh",
     LOGOUT: "/auth/client/logout",
-    PROFILE: "/auth/client/profile",
+    PROFILE: "/client/profile",
   },
 
   // Discovery

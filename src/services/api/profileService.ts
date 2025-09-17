@@ -5,11 +5,10 @@ import {
   ProfileResponse,
   ProfileUpdateData,
 } from '../../types/api';
-import { createImageFormData, validateProfileImage, ImagePickerResult } from '../../utils/imageUtils';
 
 /**
- * Profile Service for user data CRUD operations
- * Handles profile management, preferences, and photo uploads
+ * Profile Service for user data operations
+ * Handles profile management according to available API endpoints
  */
 export class ProfileService extends BaseService {
   private readonly basePath = '/client/profile';
@@ -23,135 +22,13 @@ export class ProfileService extends BaseService {
 
   /**
    * Update user profile information
+   * Note: This is the only update endpoint available in the API
    */
   async updateProfile(profileData: ProfileUpdateData): Promise<ApiResponse<ProfileResponse>> {
     return this.put<ProfileResponse>(
       this.basePath,
       profileData,
       'ProfileService.updateProfile'
-    );
-  }
-
-  /**
-   * Update user preferences
-   */
-  async updatePreferences(preferences: ClientProfile['preferences']): Promise<ApiResponse<ProfileResponse>> {
-    return this.patch<ProfileResponse>(
-      `${this.basePath}/preferences`,
-      { preferences },
-      'ProfileService.updatePreferences'
-    );
-  }
-
-  /**
-   * Upload profile photo
-   */
-  async uploadProfilePhoto(photoUri: string): Promise<ApiResponse<{ profilePhoto: string }>> {
-    try {
-      // Create image object for validation
-      const imageData: ImagePickerResult = {
-        uri: photoUri,
-        type: 'image/jpeg', // Default type, could be enhanced to detect actual type
-        name: 'profile-photo.jpg',
-      };
-
-      // Validate image
-      const validation = validateProfileImage(imageData);
-      if (!validation.isValid) {
-        return {
-          success: false,
-          data: { profilePhoto: '' },
-          error: {
-            type: 'VALIDATION_ERROR' as any,
-            message: validation.error || 'Invalid image file',
-            code: 'INVALID_IMAGE',
-          },
-        };
-      }
-
-      // Create FormData for file upload
-      const formData = createImageFormData(photoUri, 'profilePhoto', 'profile-photo.jpg');
-
-      // Use the httpClient directly for file upload with different content type
-      const response = await this.httpClient.post<{ profilePhoto: string }>(
-        `${this.basePath}/photo`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
-
-      return response;
-    } catch (error) {
-      return {
-        success: false,
-        data: { profilePhoto: '' },
-        error: {
-          type: 'SERVER_ERROR' as any,
-          message: 'Failed to upload profile photo',
-          code: 'PHOTO_UPLOAD_FAILED',
-        },
-      };
-    }
-  }
-
-  /**
-   * Delete profile photo
-   */
-  async deleteProfilePhoto(): Promise<ApiResponse<ProfileResponse>> {
-    return this.delete<ProfileResponse>(
-      `${this.basePath}/photo`,
-      'ProfileService.deleteProfilePhoto'
-    );
-  }
-
-  /**
-   * Update notification preferences
-   */
-  async updateNotificationPreferences(
-    notifications: ClientProfile['preferences']['notifications']
-  ): Promise<ApiResponse<ProfileResponse>> {
-    return this.patch<ProfileResponse>(
-      `${this.basePath}/preferences/notifications`,
-      { notifications },
-      'ProfileService.updateNotificationPreferences'
-    );
-  }
-
-  /**
-   * Update favorite categories
-   */
-  async updateFavoriteCategories(categories: string[]): Promise<ApiResponse<ProfileResponse>> {
-    return this.patch<ProfileResponse>(
-      `${this.basePath}/preferences/categories`,
-      { favoriteCategories: categories },
-      'ProfileService.updateFavoriteCategories'
-    );
-  }
-
-  /**
-   * Update preferred difficulty
-   */
-  async updatePreferredDifficulty(
-    difficulty: 'beginner' | 'intermediate' | 'advanced'
-  ): Promise<ApiResponse<ProfileResponse>> {
-    return this.patch<ProfileResponse>(
-      `${this.basePath}/preferences/difficulty`,
-      { preferredDifficulty: difficulty },
-      'ProfileService.updatePreferredDifficulty'
-    );
-  }
-
-  /**
-   * Update timezone preference
-   */
-  async updateTimezone(timezone: string): Promise<ApiResponse<ProfileResponse>> {
-    return this.patch<ProfileResponse>(
-      `${this.basePath}/preferences/timezone`,
-      { timezone },
-      'ProfileService.updateTimezone'
     );
   }
 
