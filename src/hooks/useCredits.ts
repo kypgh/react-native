@@ -151,10 +151,11 @@ export const useCredits = (): UseCreditsReturn => {
 
     try {
       const response = await creditService.getCreditPlans(brandId);
+console.log(response);
 
-      if (response.success && response.data) {
+      if (response.success && response.data?.data) {
         updateState({
-          creditPlans: response.data.creditPlans || [],
+          creditPlans: response.data.data.creditPlans || [],
           isLoadingPlans: false,
         });
       } else {

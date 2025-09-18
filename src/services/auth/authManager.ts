@@ -21,8 +21,10 @@ class AuthManager implements IAuthManager {
   private eventListeners: Map<AuthManagerEvents, EventListener[]> = new Map();
   private refreshPromise: Promise<string | null> | null = null;
   private lastRefreshAttempt: number = 0;
+  private consecutiveRefreshFailures: number = 0;
   private readonly STORAGE_KEY = 'BookingAppAuth_tokens';
   private readonly REFRESH_COOLDOWN = 5000; // 5 seconds cooldown between refresh attempts
+  private readonly MAX_CONSECUTIVE_FAILURES = 3; // Max failures before circuit breaker
 
   private constructor() {
     this.storageConfig = {
@@ -163,6 +165,13 @@ class AuthManager implements IAuthManager {
           return tokenStorage.accessToken;
         }
         
+        // Circuit breaker: if too many consecutive failures, clear tokens
+        if (this.consecutiveRefreshFailures >= this.MAX_CONSECUTIVE_FAILURES) {
+          console.log('🚨 Too many consecutive refresh failures, clearing tokens');
+          await this.clearTokens();
+          return null;
+        }
+        
         console.log('🔄 Token expired or expiring soon, refreshing...');
         this.lastRefreshAttempt = now;
         return await this.refreshAccessToken();
@@ -289,6 +298,11 @@ class AuthManager implements IAuthManager {
           throw new Error('Failed to get new access token after refresh');
         }
         
+        console.log('✅ Token refresh successful - new access token stored');
+        
+        // Reset failure counter on success
+        this.consecutiveRefreshFailures = 0;
+        
         this.emitEvent(AuthManagerEvents.TOKEN_REFRESHED, { 
           accessToken: tokenStorage.accessToken 
         });
@@ -301,6 +315,7 @@ class AuthManager implements IAuthManager {
 
       } catch (error) {
         retryCount++;
+        this.consecutiveRefreshFailures++;
         
         if (__DEV__) {
           console.error(`❌ Token refresh attempt ${retryCount} failed:`, error);

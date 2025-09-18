@@ -345,7 +345,7 @@ export const useStripePayment = () => {
  * This should be loaded from environment variables or config
  */
 export const DEFAULT_STRIPE_CONFIG: StripeConfig = {
-  publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_...',
+  publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_51234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12',
   merchantIdentifier: 'merchant.com.yourapp.booking',
   urlScheme: 'your-app-scheme',
 };

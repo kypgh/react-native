@@ -11,6 +11,9 @@ class HttpClient {
   private client: AxiosInstance;
   private config: HttpClientConfig;
   private authToken: string | null = null;
+  private refreshInProgress: boolean = false;
+  private consecutiveRefreshFailures: number = 0;
+  private readonly MAX_REFRESH_FAILURES = 3;
 
   constructor(config: HttpClientConfig) {
     this.config = config;
@@ -80,31 +83,60 @@ class HttpClient {
         }
 
         // Handle token refresh logic for 401 errors
-        if (error.response?.status === 401 && this.authToken) {
-          try {
+        if (error.response?.status === 401 && this.authToken && !this.refreshInProgress) {
+          // Check if we've had too many consecutive failures
+          if (this.consecutiveRefreshFailures >= this.MAX_REFRESH_FAILURES) {
+            console.log('🚨 Too many consecutive refresh failures, clearing tokens');
+            this.clearAuthToken();
             const AuthManager = (await import('./auth/authManager')).default;
             const authManager = AuthManager.getInstance();
+            await authManager.clearTokens();
+            return Promise.reject(error);
+          }
+
+          try {
+            this.refreshInProgress = true;
+            const AuthManager = (await import('./auth/authManager')).default;
+            const authManager = AuthManager.getInstance();
+            
+            console.log('🔄 Attempting token refresh due to 401 error');
             
             // Try to refresh token
             const newToken = await authManager.refreshAccessToken();
             if (newToken && error.config) {
               this.authToken = newToken;
+              this.consecutiveRefreshFailures = 0; // Reset failure counter on success
+              
               // Retry the original request with new token
               const originalRequest = error.config;
               originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              console.log('🔄 Retrying original request with new token');
               return this.client.request(originalRequest);
             } else {
-              // Refresh failed, clear token from both HTTP client and secure storage
-              console.log('🔐 Token refresh failed, clearing all tokens');
-              this.clearAuthToken();
-              await authManager.clearTokens();
+              // Refresh failed, increment failure counter
+              this.consecutiveRefreshFailures++;
+              console.log(`🔐 Token refresh failed (${this.consecutiveRefreshFailures}/${this.MAX_REFRESH_FAILURES})`);
+              
+              if (this.consecutiveRefreshFailures >= this.MAX_REFRESH_FAILURES) {
+                console.log('🚨 Max refresh failures reached, clearing all tokens');
+                this.clearAuthToken();
+                await authManager.clearTokens();
+              }
             }
           } catch (refreshError) {
-            // Refresh failed, clear token from both HTTP client and secure storage
-            console.log('🔐 Token refresh error, clearing all tokens:', refreshError);
-            this.clearAuthToken();
-            const authManager = AuthManager.getInstance();
-            await authManager.clearTokens();
+            // Refresh failed, increment failure counter
+            this.consecutiveRefreshFailures++;
+            console.log(`🔐 Token refresh error (${this.consecutiveRefreshFailures}/${this.MAX_REFRESH_FAILURES}):`, refreshError);
+            
+            if (this.consecutiveRefreshFailures >= this.MAX_REFRESH_FAILURES) {
+              console.log('🚨 Max refresh failures reached, clearing all tokens');
+              this.clearAuthToken();
+              const AuthManager = (await import('./auth/authManager')).default;
+              const authManager = AuthManager.getInstance();
+              await authManager.clearTokens();
+            }
+          } finally {
+            this.refreshInProgress = false;
           }
         }
 
@@ -208,6 +240,8 @@ class HttpClient {
 
   public setAuthToken(token: string): void {
     this.authToken = token;
+    // Reset failure counter when setting a new token (successful auth)
+    this.consecutiveRefreshFailures = 0;
   }
 
   public clearAuthToken(): void {

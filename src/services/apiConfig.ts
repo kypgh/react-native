@@ -141,9 +141,10 @@ export const API_ENDPOINTS = {
 
   // Payments
   PAYMENTS: {
-    CREATE_INTENT: "/payments/create-intent",
-    CONFIRM: "/payments/confirm",
-    HISTORY: "/payments/history",
+    SUBSCRIPTION_CREATE_INTENT: "/client/payments/subscription/create-intent",
+    CREDITS_CREATE_INTENT: "/client/payments/credits/create-intent",
+    CONFIRM: "/client/payments/confirm",
+    HISTORY: "/client/payments/history",
   },
 
   // Bookings

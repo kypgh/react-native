@@ -27,7 +27,7 @@ export class PaymentService extends BaseService {
     subscriptionPlanId: string,
     paymentMethodId?: string
   ): Promise<ApiResponse<PaymentIntentResponse>> {
-    const url = `${this.basePath}/subscription/payment-intent`;
+    const url = `${this.basePath}/subscription/create-intent`;
     const data: SubscriptionPurchaseRequest = {
       subscriptionPlanId,
       paymentMethodId,
@@ -47,7 +47,7 @@ export class PaymentService extends BaseService {
     creditPlanId: string,
     paymentMethodId?: string
   ): Promise<ApiResponse<PaymentIntentResponse>> {
-    const url = `${this.basePath}/credit/payment-intent`;
+    const url = `${this.basePath}/credits/create-intent`;
     const data: CreditPurchaseRequest = {
       creditPlanId,
       paymentMethodId,

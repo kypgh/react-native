@@ -28,7 +28,7 @@ export class CreditService extends BaseService {
    * Get all credit plans for a specific brand
    */
   async getCreditPlans(brandId: string): Promise<ApiResponse<CreditPlansResponse>> {
-    const url = `/api/client/discovery/brands/${brandId}/credit-plans`;
+    const url = `/client/discovery/brands/${brandId}/credit-plans`;
     
     return this.get<CreditPlansResponse>(url, `CreditService.getCreditPlans(${brandId})`);
   }
@@ -90,7 +90,7 @@ export class CreditService extends BaseService {
     creditPlanId: string,
     paymentMethodId?: string
   ): Promise<ApiResponse<PaymentIntentResponse>> {
-    const url = `${this.basePath}/payment-intent`;
+    const url = `/client/payments/credits/create-intent`;
     const data: CreditPurchaseRequest = {
       creditPlanId,
       paymentMethodId,
@@ -105,7 +105,7 @@ export class CreditService extends BaseService {
   async confirmCreditPayment(
     paymentIntentId: string
   ): Promise<ApiResponse<PaymentConfirmationResponse>> {
-    const url = `${this.basePath}/confirm-payment`;
+    const url = `/client/payments/confirm`;
     const data: PaymentConfirmationRequest = {
       paymentIntentId,
     };
